@@ -10,7 +10,7 @@ App = {
       await App.render()
     },
   
-    // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
+   
     loadWeb3: async () => {
       if (typeof web3 !== 'undefined') {
         App.web3Provider = web3.currentProvider
@@ -46,14 +46,14 @@ App = {
     loadAccount: async() => {
       // App.account = web3.eth.Contract
       App.account= web3.eth.accounts[0]
-      // console.log(App.account)
+      console.log(App.account)
     },
     
     loadContract: async () => {
       const todoList = await $.getJSON('TodoList.json')
       App.contracts.TodoList = TruffleContract(todoList)
       App.contracts.TodoList.setProvider(App.web3Provider)
-      // console.log(todoList)
+      console.log(todoList)
 
       App.todoList = await App.contracts.TodoList.deployed()
     },
@@ -66,6 +66,7 @@ App = {
       App.setloading(true)
 
       $('#account').html(App.account)
+      
       await App.renderTasks()
 
       App.setloading(false)
@@ -82,11 +83,11 @@ App = {
           const taskCompleted = task[2]
         
           const $newTaskTemplate = $taskTemplate.clone()
-          $newTaskTemplate.find('content').html(taskContent)
+          $newTaskTemplate.find('.content').html(taskContent)
           $newTaskTemplate.find('input')
                           .prop('name',taskId)
                           .prop('checked',taskCompleted)
-                          .prop('click',App.toggleCompleted)
+                          .on('click',App.toggleCompleted)
 
           if(taskCompleted) {
             $('#completedTaskList').append($newTaskTemplate)
@@ -101,6 +102,20 @@ App = {
         
     },
 
+    createTask: async () => {
+      App.setloading(true)
+      const content = $('#newTask').val()
+      await App.todoList.createTask(content,{from:App.account})
+      window.location.reload()
+    },
+
+    toggleCompleted: async (e) => {
+      App.setloading(true)
+      const taskId = e.target.name
+      await App.todoList.toggleCompleted(taskId,{from:App.account})
+      window.location.reload()
+
+    },
 
     setloading: (boolean) => {
       App.loading = boolean
@@ -116,6 +131,7 @@ App = {
       }
     },
 
+   
 
   }
   
